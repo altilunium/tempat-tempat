@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>chizu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="leaflet.css" />
+    <script src="leaflet.js"></script>
+    <script src="su.js"></script>
+
+<style>
+@font-face {
+    font-family: 'Noto';
+    font-style: normal;
+    font-weight: normal;
+    src: local('Open Sans Regular'),url('r/noto.woff2') format('woff');
+}
+
+
+html,body,#mapid {
+height: 100%;
+width: 100%;
+left:0px;
+position: fixed;
+top:0px;
+}	
+
+#titl{
+	width: 70px;
+    height:70px;
+    border-radius: 90px;
+	position: fixed;
+	right:20px;
+	bottom:20px;
+	background-color: #3232e6;
+    z-index: 30;	
+}
+
+#titl2{
+	width: 70px;
+    height:70px;
+    border-radius: 90px;
+	position: fixed;
+	left:20px;
+	bottom:20px;
+	background-color:red;
+    z-index: 30;
+    display: none;	
+}
+
+.ppp{
+  display: fixed;
+}
+
+#tw{
+    position:fixed;
+    margin:0 auto;
+    background-color: white;
+    width:100%;
+    height:100%;
+    z-index: 20;
+    top:0px;
+    left:0px;
+    display:none;
+   
+}
+
+#main-txtbox{
+    width: 95%;
+    border: 0px;
+    padding-left: 5%;
+    overflow: hidden;
+    resize: none;
+    font-family: 'Noto';
+    color: #1A1A1B;
+    font-size: 14px;
+    line-height: 21px;
+    font-weight: 400;
+    padding-bottom: 500px;
+    margin-top: 47px;
+    max-width: 750px;
+
+}
+
+#main-txtbox:focus-visible{
+    outline: none;
+}
+
+</style>
+</head>
+<body>
+<div id="titl" onclick="bc()"></div>
+<div id="titl2" onclick="bc2()"></div>
+<div id="tw"><div id="main-txtbox" contenteditable></div></div>
+    
+<div id="mapid"></div>
+
+
+
+
+<script>
+    
+    var supabase = supabase.createClient("https://vvtmwxwxboyudlwmwsjl.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTg0MzQ0NCwiZXhwIjoxOTQ1NDE5NDQ0fQ.paOAjdDgtoPn_u-OeFYIiVhNOp5Pxxh7lSN92G9OOWY")
+
+    var vid = "";	
+
+// Initialize the agent at application startup.
+const fpPromise = new Promise((resolve, reject) => {
+  const script = document.createElement('script')
+  script.onload = resolve
+  script.onerror = reject
+  script.async = true
+  script.src = 'fp.js'
+  document.head.appendChild(script)
+})
+  .then(() => FingerprintJS.load())
+
+// Get the visitor identifier when you need it.
+fpPromise
+  .then(fp => fp.get())
+  .then(result => {
+    // This is the visitor identifier:
+    const visitorId = result.visitorId
+    console.log(visitorId)
+    vid = visitorId;
+    
+  })
+
+
+
+    var bu = document.getElementById("titl");
+    var bu2 = document.getElementById("titl2");
+    var tx = document.getElementById("tw")
+    var state = 1;
+    var x_lat;
+    var x_lon;
+    var x_usr;
+    
+    function bc(){
+        bu.style.backgroundColor = "red" 
+        if (state == 1){
+            bu.style.backgroundColor = "red" 
+            state = 2
+            return;
+        }
+        if (state == 2){
+            bu.style.backgroundColor = "blue"
+            state = 1 
+            return;
+        }
+        if (state == 3){
+            state = 4
+            tx.style.display = "block"
+            var txx = document.getElementById("main-txtbox");
+            setTimeout(function() {
+                txx.focus();
+            }, 0);
+            bu.style.backgroundColor = "green"
+        return;
+        }
+        if (state == 4){
+            s()
+        }
+    }
+
+async function s()   {
+  	var twit = document.getElementById("main-txtbox").innerHTML;
+  	if (twit.length > 0) {
+  		document.getElementById("main-txtbox").innerHTML = "";
+
+  	const { data, error } = await supabase
+  .from('t2')
+  .insert([
+    { lat: x_lat, lon: x_lon, usr:vid,post:twit  }
+  ])
+
+
+  ref()
+  bc2()
+  }
+}
+
+
+
+
+
+      var map = L.map('mapid',{ zoomControl: false }).setView({lat: -2.811371193331128, lng:  113.64257812500001},5)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }).addTo(map);
+
+     
+      L.control.scale().addTo(map);
+
+    
+
+      async function ref() {
+	const { data, error } = await supabase
+  .from('t2')
+  .select()
+ 
+  for (var i = data.length-1 ; i >= 0; i--) { 
+  
+      var circle = L.circle([data[i].lat,data[i].lon], {
+    color: 'blue',
+    fillColor: 'blue',
+    fillOpacity: 0.5,
+    radius: 5
+}).addTo(map);
+    circle.bindPopup(data[i].post)
+
+   }
+}
+
+ref()
+
+
+      
+
+
+var tempPos
+map.on('click', function(e) {
+    if (state == 3){
+     map.removeLayer(tempPos);
+     state = 2;   
+    }
+
+    if (state == 2 ){
+        x_lat = e.latlng.lat;
+        x_lon = e.latlng.lng;
+        console.log(e.latlng.lat,e.latlng.lng);
+        tempPos = L.circle([e.latlng.lat,e.latlng.lng], {
+            color: 'blue',
+            fillColor: 'blue',
+            fillOpacity: 0.5,
+            radius: 10
+        })
+
+        tempPos.addTo(map);
+        bu.style.backgroundColor = "green"
+        state = 3 
+        bu2.style.display = "block"
+    }
+})
+
+
+function bc2(){
+    map.removeLayer(tempPos);
+    state = 1;
+    bu.style.backgroundColor = "blue"
+    bu2.style.display = "none"
+    tx.style.display = "none"
+
+
+}
+
+     
+
+
+    
+
+
+</script>
+</body>
+</html>
+
+
+
