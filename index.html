@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tempat-Tempat</title>
-	<link rel="icon" href="r/logo.png" type="image/x-icon">
+    <title>chizu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="leaflet.css" />
     <script src="leaflet.js"></script>
@@ -27,10 +26,8 @@ top:0px;
 
 img {
     width : 300px;
-}	
-	
-	
-	
+}
+
 #titl{
 	width: 70px;
     height:70px;
@@ -260,6 +257,28 @@ function bc2(){
     tx.style.display = "none"
 
 
+}
+
+
+
+document.onkeyup = function(e) {
+    if (e.ctrlKey && e.which == 190) {
+        var lonlat = prompt("Enter coordinate");
+        lonlat = lonlat.split(",")
+        console.log(lonlat)
+        map.setView(lonlat)
+        x_lat = lonlat[0]
+        x_lon = lonlat[1]
+        tempPos = L.circle([lonlat[0],lonlat[1]], {
+            color: 'blue',
+            fillColor: 'blue',
+            fillOpacity: 0.5,
+            radius: 10
+        })
+        tempPos.addTo(map);
+        state = 3;
+        bu2.style.display = "block"
+    }
 }
 
      
