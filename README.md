@@ -1,2 +1,1 @@
-# tempat-tempat
-https://pustaka.miraheze.org/wiki/Tempat-Tempat
+Altilunium.github.io/tempat-tempat
