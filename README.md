@@ -1,1 +1,1 @@
-Altilunium.github.io/tempat-tempat
+https://altilunium.github.io/tempat-tempat
